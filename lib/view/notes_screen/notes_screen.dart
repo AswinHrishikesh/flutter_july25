@@ -13,49 +13,57 @@ class _NotesScreenState extends State<NotesScreen> {
   TextEditingController titleController = TextEditingController();
   TextEditingController descController = TextEditingController();
   TextEditingController dateController = TextEditingController();
+  int selectedColorIndex = 0;
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        floatingActionButton: FloatingActionButton(
-          backgroundColor: Colors.grey.shade300,
-          onPressed: () {
-            titleController.clear;
-            descController.clear;
-            dateController
-                .clear; //to clear controllers before openning the bottomsheet again
-            customBottomSheet(context);
-          },
-          child: Icon(Icons.add),
-        ),
-        body: ListView.separated(
-            padding: EdgeInsets.all(15),
-            itemBuilder: (context, index) => NoteCard(
-                  date: DummyDb.notesList[index]["date"],
-                  desc: DummyDb.notesList[index]["desc"],
-                  title: DummyDb.notesList[index]["title"],
-                  onDelete: () {
-                    DummyDb.notesList.removeAt(index);
-                    setState(() {});
-                  },
-                  onEdit: () {
-                    titleController.text = DummyDb.notesList[index]["title"];
-                    titleController.text = DummyDb.notesList[index]["date"];
-                    titleController.text = DummyDb.notesList[index]
-                        ["desc"]; // titleController = TextEditingController(
-                    // text: Dummydb.notesList[index]["title"]);
-                    customBottomSheet(context, isEdit: true);
-                  },
-                ),
-            separatorBuilder: (context, index) => SizedBox(height: 10),
-            itemCount: DummyDb.notesList.length),
-      ),
+          floatingActionButton: FloatingActionButton(
+            backgroundColor: Colors.grey.shade300,
+            onPressed: () {
+              titleController.clear();
+              descController.clear();
+              dateController.clear();
+              selectedColorIndex = 0;
+              _customBottomSheet(context);
+            },
+            child: Icon(Icons.add),
+          ),
+          body: ListView.separated(
+              padding: EdgeInsets.all(15),
+              itemBuilder: (context, index) => NoteCard(
+                    noteColor: DummyDb
+                        .noteColors[DummyDb.notesList[index]["colorIndex"]],
+                    date: DummyDb.notesList[index]["date"],
+                    desc: DummyDb.notesList[index]["desc"],
+                    title: DummyDb.notesList[index]["title"],
+                    // for deletion
+                    onDelete: () {
+                      DummyDb.notesList.removeAt(index);
+                      setState(() {});
+                    },
+                    // for editing
+                    onEdit: () {
+                      titleController.text = DummyDb.notesList[index]["title"];
+                      dateController.text = DummyDb.notesList[index]["date"];
+                      descController.text = DummyDb.notesList[index]["desc"];
+                      // titleController = TextEditingController(
+                      //     text: DummyDb.notesList[index]["title"]);
+                      _customBottomSheet(context,
+                          isEdit: true, itemIndex: index);
+                    },
+                  ),
+              separatorBuilder: (context, index) => SizedBox(
+                    height: 10,
+                  ),
+              itemCount: DummyDb.notesList.length)),
     );
   }
 
-  Future<dynamic> customBottomSheet(BuildContext context,
-      {bool isEdit = false}) {
+  Future<dynamic> _customBottomSheet(BuildContext context,
+      {bool isEdit = false, int? itemIndex}) {
     return showModalBottomSheet(
+        isScrollControlled: true,
         context: context,
         builder: (context) => Padding(
               padding: const EdgeInsets.all(20),
@@ -65,35 +73,64 @@ class _NotesScreenState extends State<NotesScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    TextField(
+                    TextFormField(
                       controller: titleController,
                       decoration: InputDecoration(
                           hintText: "Title",
                           filled: true,
-                          fillColor: Colors.grey,
+                          fillColor: Colors.grey.shade300,
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10))),
                     ),
                     SizedBox(height: 20),
-                    TextField(
+                    TextFormField(
                       controller: descController,
                       maxLines: 5,
                       decoration: InputDecoration(
-                          hintText: "Discription",
+                          hintText: "Description",
                           filled: true,
-                          fillColor: Colors.grey,
+                          fillColor: Colors.grey.shade300,
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10))),
                     ),
                     SizedBox(height: 20),
-                    TextField(
+                    TextFormField(
                       controller: dateController,
                       decoration: InputDecoration(
                           hintText: "Date",
                           filled: true,
-                          fillColor: Colors.grey,
+                          fillColor: Colors.grey.shade300,
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10))),
+                    ),
+                    SizedBox(height: 20),
+                    //build color section
+                    StatefulBuilder(
+                      builder: (context, setColorState) => Row(
+                        children: List.generate(
+                          DummyDb.noteColors.length,
+                          (index) => Expanded(
+                            child: InkWell(
+                              onTap: () {
+                                selectedColorIndex = index;
+                                setColorState(
+                                  () {},
+                                );
+                              },
+                              child: Container(
+                                margin: EdgeInsets.symmetric(horizontal: 5),
+                                height: 50,
+                                decoration: BoxDecoration(
+                                    border: selectedColorIndex == index
+                                        ? Border.all(width: 3)
+                                        : null,
+                                    color: DummyDb.noteColors[index],
+                                    borderRadius: BorderRadius.circular(10)),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                     SizedBox(height: 20),
                     Row(
@@ -107,14 +144,14 @@ class _NotesScreenState extends State<NotesScreen> {
                               padding: EdgeInsets.symmetric(vertical: 10),
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                color: Colors.red,
-                              ),
+                                  color: Colors.red,
+                                  borderRadius: BorderRadius.circular(10)),
                               child: Text(
                                 "Cancel",
                                 style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold),
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),
@@ -123,11 +160,21 @@ class _NotesScreenState extends State<NotesScreen> {
                         Expanded(
                           child: InkWell(
                             onTap: () {
-                              DummyDb.notesList.add({
-                                "title": titleController.text,
-                                "desc": descController.text,
-                                "date": dateController.text,
-                              });
+                              if (isEdit == true) {
+                                DummyDb.notesList[itemIndex!] = {
+                                  "title": titleController.text,
+                                  "desc": descController.text,
+                                  "colorIndex": selectedColorIndex,
+                                  "date": dateController.text,
+                                };
+                              } else {
+                                DummyDb.notesList.add({
+                                  "title": titleController.text,
+                                  "desc": descController.text,
+                                  "date": dateController.text,
+                                  "colorIndex": selectedColorIndex
+                                });
+                              }
                               Navigator.pop(context);
                               setState(() {});
                             },
@@ -135,14 +182,14 @@ class _NotesScreenState extends State<NotesScreen> {
                               padding: EdgeInsets.symmetric(vertical: 10),
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                color: Colors.green,
-                              ),
+                                  color: Colors.green,
+                                  borderRadius: BorderRadius.circular(10)),
                               child: Text(
                                 isEdit ? "Update" : "Save",
                                 style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold),
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),

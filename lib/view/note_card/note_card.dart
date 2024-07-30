@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_july25/utils/color_constants.dart';
+import 'package:share_plus/share_plus.dart';
 
 class NoteCard extends StatelessWidget {
   const NoteCard(
@@ -8,20 +8,25 @@ class NoteCard extends StatelessWidget {
       required this.title,
       required this.desc,
       required this.date,
-      this.onEdit});
+      this.onEdit,
+      required this.noteColor});
   final void Function()? onDelete;
   final void Function()? onEdit;
   final String title;
   final String desc;
   final String date;
+  final Color noteColor;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+      padding: EdgeInsets.symmetric(
+        horizontal: 15,
+        vertical: 10,
+      ),
       decoration: BoxDecoration(
-        color: Colors.red,
-        borderRadius: BorderRadius.circular(10),
+        color: noteColor,
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -38,16 +43,10 @@ class NoteCard extends StatelessWidget {
               Spacer(),
               IconButton(
                   onPressed: onEdit,
-                  icon: Icon(
-                    Icons.edit,
-                    color: ColorConstants.mainblack,
-                  )),
+                  icon: Icon(Icons.edit, color: Colors.black)),
               IconButton(
                   onPressed: onDelete,
-                  icon: Icon(
-                    Icons.delete,
-                    color: ColorConstants.mainblack,
-                  )),
+                  icon: Icon(Icons.delete, color: Colors.black)),
             ],
           ),
           Text(
@@ -55,7 +54,7 @@ class NoteCard extends StatelessWidget {
             maxLines: 4,
             style: TextStyle(
                 overflow: TextOverflow.ellipsis,
-                color: ColorConstants.mainblack,
+                color: Colors.black,
                 fontSize: 18,
                 fontWeight: FontWeight.normal),
           ),
@@ -65,18 +64,17 @@ class NoteCard extends StatelessWidget {
               Text(
                 date,
                 style: TextStyle(
-                    color: ColorConstants.mainblack,
+                    color: Colors.black,
                     fontSize: 16,
                     fontWeight: FontWeight.normal),
               ),
               IconButton(
-                  onPressed: () {},
-                  icon: Icon(
-                    Icons.share,
-                    color: ColorConstants.mainblack,
-                  ))
+                  onPressed: () {
+                    Share.share("$title \n$desc \n$date");
+                  },
+                  icon: Icon(Icons.share, color: Colors.black)),
             ],
-          )
+          ),
         ],
       ),
     );
